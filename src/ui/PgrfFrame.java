@@ -1,37 +1,85 @@
 package ui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class PgrfFrame extends JFrame {
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 
+import utils.Renderer;
+
+public class PgrfFrame extends JFrame implements MouseMotionListener {
+
+    static int FPS = 1000/60;
     private BufferedImage img;
     static int width = 800;
     static int height = 600;
+    private JPanel panel;
+    private Renderer renderer;
+    private int coorX, coorY;
 
-    public void main(String... args ) {
+    public static void main(String... args) {
         PgrfFrame pgrfFrame = new PgrfFrame();
-        pgrfFrame.img = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        pgrfFrame.init(width,height);
+        pgrfFrame.img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        pgrfFrame.init(width, height);
+    }
 
-        private void init(int width, int height) {
-            setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            setVisible(true);
-            setSite(width,height);
-            setTitle("Počítačová grafika");
+    private void init(int width, int height) {
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setVisible(true);
+        setSize(width, height);
+        setTitle("Počítačová grafika");
 
-            draw();
-        }
+        panel = new JPanel();
+        add(panel);
 
-        private void draw()  {
-          img.getGraphics().fillRect(x:0, y:0, img.getWidth(), img.getHeight());
-            for (int i = 0; i < 100; i++) {
-                img.setRGB(x:200 + 1, y:200, Color.RED.getRGB());
+        panel.addMouseMotionListener(this);
+        panel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
             }
-            getGraphics().drawImage(img, x:0, y:0, img.getWidth(), img.getHeight(), observer:null);
-        }
-        }
+        });
 
+        setLocationRelativeTo(null);
+
+        renderer = new Renderer(img);
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                draw();
+            }
+        }, 100, FPS);
+
+        draw();
+    }
+
+    private void draw() {
+        img.getGraphics().fillRect(0, 0, img.getWidth(), img.getHeight());
+
+        renderer.lineTrivial(300, 300, coorX, coorY);
+
+        panel.getGraphics().drawImage(img, 0, 0, null);
+        panel.paintComponents(getGraphics());
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
 
     }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        coorX = e.getX();
+        coorY = e.getY();
+    }
+}
